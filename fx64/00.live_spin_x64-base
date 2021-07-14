@@ -1,0 +1,50 @@
+#!/bin/bash
+setenforce 0 ;
+systemctl stop httpd ;
+
+#cd /fx64 ;
+
+chmod -R 777 /fx64 ;
+chown -R root:root /fx64 ;
+
+#copy updated packages into local repo
+#cd /fx64/live_cache_x64 ;
+#for i in */packages/ ; do cp -rf $i/*.* ../live_repo_x64/ ; done ;
+
+#cleanup temp dir and destination
+#rm -rf /fx64/live_cache_x64
+rm -rf /fx64/live_tmp_x64 ;
+#rm -rf /fx64/live_cache_x64/*.solv* ;
+rm -rf /fx64/live_cache_x64/flive0-*/ ;
+rm -rf /fx64/live_repo_x64/.repodata/ ;
+#rm -rf /var/tmp/dnf-*/ ;
+
+#recreate the cache dir
+#mkdir /fx64/live_cache_x64
+mkdir /fx64/live_tmp_x64 ;
+
+#run createrepo
+createrepo /fx64/live_repo_x64/ ;
+
+systemctl start httpd ;
+
+#selinux disable
+setenforce 0 ;
+rm -rf /fx64/fx64_live_x64-base.log ;
+rm -rf /fx64/spinlog-base.log ;
+livecd-creator -c /fx64/flat-fedora-live-cinnamon-base.ks -f fx64_x86_64 --title=FX64 --releasever=fedora-34 --plugins -t /fx64/live_tmp_x64 --cache=/fx64/live_cache_x64 -v --logfile=/fx64/fx64_live_x64-base.log
+#livecd-creator -c /fx64/flat-fedora-live-cinnamon.ks -f fx64_x86_64 --plugins -t /fx64/live_tmp_x64 --cache=/fx64/live_cache_x64 -v --logfile=/fx64/fx64_live_x64.log
+#-d -v >>/fx64/spinlog.log 2>&1 ;
+
+#selinux enable
+setenforce 1 ;
+
+rm -rf fx64_f34_x86_64-base.iso ;
+mv -f fx64_x86_64.iso fx64_f34_x86_64-base.iso ;
+
+#copy updated packages into local repo
+#cd /fx64/live_cache_x64 ;
+#for i in */packages/ ; do cp -rf $i/*.* ../live_repo_x64/ ; done ;
+
+chmod -R 777 /fx64 ;
+chown -R root:root /fx64 ;
